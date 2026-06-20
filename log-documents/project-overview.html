@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TradingView Scraper — ภาพรวมโปรเจกต์</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans+Thai:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#0E141B;--panel:#161F29;--panel-2:#1B2733;--grid:#24323F;--line:#2B3B49;
+    --text:#E9EFF4;--muted:#8295A4;--faint:#5C6E7C;
+    --up:#2EBD85;--down:#F6465D;--amber:#F0B90B;--cyan:#54A0FF;
+    --display:'Space Grotesk',sans-serif;--mono:'IBM Plex Mono',monospace;
+    --body:'IBM Plex Sans Thai','Space Grotesk',sans-serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{
+    background:var(--ink);color:var(--text);font-family:var(--body);line-height:1.6;
+    -webkit-font-smoothing:antialiased;
+    background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);
+    background-size:44px 44px;background-position:center top;
+  }
+  body::before{content:"";position:fixed;inset:0;pointer-events:none;
+    background:radial-gradient(ellipse 80% 50% at 50% -10%,rgba(46,189,133,.10),transparent 70%);z-index:0}
+  .wrap{max-width:1040px;margin:0 auto;padding:0 24px;position:relative;z-index:1}
+
+  .topbar{display:flex;align-items:center;gap:14px;padding:18px 0;border-bottom:1px solid var(--line);
+    font-family:var(--mono);font-size:12px;color:var(--muted);flex-wrap:wrap}
+  .dot{width:8px;height:8px;border-radius:50%;background:var(--up);box-shadow:0 0 10px var(--up)}
+  .topbar .tick{color:var(--up)}.topbar .sep{color:var(--faint)}
+
+  .hero{padding:64px 0 48px}
+  .eyebrow{font-family:var(--mono);font-size:12.5px;letter-spacing:.18em;text-transform:uppercase;
+    color:var(--amber);margin-bottom:20px;display:flex;align-items:center;gap:10px}
+  .eyebrow::before{content:"";width:26px;height:1px;background:var(--amber)}
+  h1{font-family:var(--display);font-weight:700;font-size:clamp(34px,6vw,60px);line-height:1.04;
+    letter-spacing:-.02em;margin-bottom:22px}
+  h1 .grad{background:linear-gradient(100deg,var(--up),var(--cyan));-webkit-background-clip:text;background-clip:text;color:transparent}
+  .lede{font-size:clamp(16px,2.1vw,19px);color:var(--muted);max-width:62ch}
+  .lede b{color:var(--text);font-weight:600}
+  .chips{display:flex;gap:10px;flex-wrap:wrap;margin-top:30px}
+  .chip{font-family:var(--mono);font-size:12.5px;padding:7px 13px;border:1px solid var(--line);
+    border-radius:7px;background:var(--panel);color:var(--muted);display:flex;align-items:center;gap:7px}
+  .chip b{color:var(--text);font-weight:600}.chip .k{color:var(--up)}
+
+  section{padding:46px 0;border-top:1px solid var(--line)}
+  .sec-head{display:flex;align-items:baseline;gap:14px;margin-bottom:30px;flex-wrap:wrap}
+  .sec-num{font-family:var(--mono);font-size:13px;color:var(--amber)}
+  .sec-title{font-family:var(--display);font-weight:600;font-size:clamp(21px,3vw,27px);letter-spacing:-.01em}
+  .sec-sub{font-size:14px;color:var(--faint);margin-left:auto;font-family:var(--mono)}
+
+  .pipe{display:grid;grid-template-columns:repeat(5,1fr);gap:0;position:relative}
+  .stage{background:var(--panel);border:1px solid var(--line);padding:20px 16px;position:relative}
+  .stage:not(:last-child){border-right:none}
+  .stage:first-child{border-radius:10px 0 0 10px}.stage:last-child{border-radius:0 10px 10px 0}
+  .stage .ico{font-family:var(--mono);font-size:11px;color:var(--ink);background:var(--up);display:inline-block;
+    width:24px;height:24px;border-radius:6px;text-align:center;line-height:24px;font-weight:600;margin-bottom:12px}
+  .stage:nth-child(2) .ico{background:var(--cyan)}.stage:nth-child(3) .ico{background:var(--amber)}
+  .stage:nth-child(4) .ico{background:var(--cyan)}.stage:nth-child(5) .ico{background:var(--up)}
+  .stage h3{font-family:var(--display);font-size:15px;font-weight:600;margin-bottom:6px}
+  .stage p{font-size:12.5px;color:var(--muted);line-height:1.5}
+  .stage code{font-family:var(--mono);font-size:11px;color:var(--cyan)}
+  .arrow{position:absolute;top:50%;right:-7px;transform:translateY(-50%);width:13px;height:13px;
+    background:var(--panel);border-right:1px solid var(--line);border-bottom:1px solid var(--line);rotate:-45deg;z-index:3}
+  .stage:last-child .arrow{display:none}
+
+  /* ---------- interactive cron builder ---------- */
+  .builder{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:26px 24px 24px}
+  .ctrls{display:grid;grid-template-columns:1fr 1fr;gap:22px 28px;margin-bottom:26px}
+  .ctrl label{display:block;font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;
+    color:var(--muted);margin-bottom:11px}
+  .ctrl label .val{color:var(--up);float:right;text-transform:none;letter-spacing:0}
+  input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:5px;border-radius:4px;
+    background:var(--panel-2);outline:none;border:1px solid var(--line)}
+  input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;width:18px;height:18px;
+    border-radius:50%;background:var(--up);cursor:pointer;border:3px solid var(--ink);box-shadow:0 0 0 1px var(--up)}
+  input[type=range]::-moz-range-thumb{width:18px;height:18px;border-radius:50%;background:var(--up);cursor:pointer;
+    border:3px solid var(--ink);box-shadow:0 0 0 1px var(--up)}
+  .seg{display:flex;gap:7px;flex-wrap:wrap}
+  .seg button{font-family:var(--mono);font-size:13px;padding:8px 15px;border-radius:7px;cursor:pointer;
+    background:var(--panel-2);border:1px solid var(--line);color:var(--muted);transition:.15s}
+  .seg button:hover{border-color:var(--faint);color:var(--text)}
+  .seg button.on{background:var(--up);border-color:var(--up);color:var(--ink);font-weight:600}
+
+  .track{position:relative;height:54px;border-radius:8px;overflow:hidden;background:var(--panel-2);
+    border:1px solid var(--line);margin-top:6px}
+  .window{position:absolute;top:0;bottom:0;background:linear-gradient(180deg,rgba(46,189,133,.22),rgba(46,189,133,.06));
+    border-left:1px solid var(--up);border-right:1px solid var(--up);transition:.18s ease}
+  .tick{position:absolute;bottom:0;width:1px;height:13px;background:var(--amber);opacity:.9;transition:.18s}
+  .tick::after{content:"";position:absolute;top:-3px;left:-2px;width:5px;height:5px;border-radius:50%;background:var(--amber)}
+  .axis{display:flex;justify-content:space-between;margin-top:9px;font-family:var(--mono);font-size:10.5px;color:var(--faint)}
+  .meta{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px;font-family:var(--mono);font-size:12px}
+  .meta .pill{background:var(--panel-2);border:1px solid var(--line);border-radius:6px;padding:6px 11px;color:var(--muted)}
+  .meta .pill b{color:var(--text);font-weight:600}
+  .meta .pill .runs{color:var(--amber)}
+
+  .out{margin-top:22px;background:var(--ink);border:1px solid var(--line);border-radius:10px;
+    padding:16px 18px;display:flex;align-items:flex-start;gap:14px;justify-content:space-between}
+  .out .label{font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--faint);margin-bottom:9px}
+  .out .cron{font-family:var(--mono);font-size:14px;color:var(--up);line-height:1.7;word-break:break-all}
+  .out .cron .cm{color:var(--faint)}
+  .copy{flex-shrink:0;font-family:var(--mono);font-size:12px;padding:9px 14px;border-radius:7px;cursor:pointer;
+    background:var(--panel-2);border:1px solid var(--line);color:var(--text);transition:.15s;white-space:nowrap}
+  .copy:hover{border-color:var(--up);color:var(--up)}
+  .copy.done{background:var(--up);border-color:var(--up);color:var(--ink)}
+  .hint{margin-top:14px;font-size:12.5px;color:var(--faint)}
+  .hint b{color:var(--muted);font-weight:500}
+
+  .steps{display:flex;flex-direction:column;gap:14px}
+  .step{display:flex;gap:16px;background:var(--panel);border:1px solid var(--line);border-radius:11px;padding:18px 20px}
+  .st-num{flex-shrink:0;width:30px;height:30px;border-radius:8px;background:var(--cyan);color:var(--ink);
+    font-family:var(--mono);font-weight:600;font-size:14px;display:flex;align-items:center;justify-content:center}
+  .step h4{font-family:var(--display);font-size:16px;font-weight:600;margin-bottom:7px}
+  .step p{font-size:13px;color:var(--muted);line-height:1.55}
+  .step code{font-family:var(--mono);font-size:12px;color:var(--cyan)}
+  .cmd{font-family:var(--mono);font-size:12.5px;color:var(--up);background:var(--ink);border:1px solid var(--line);
+    border-radius:8px;padding:12px 14px;margin:4px 0 10px;line-height:1.8;overflow-x:auto}
+
+  .tree{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:24px;
+    font-family:var(--mono);font-size:13px;overflow-x:auto}
+  .tree .row{display:flex;gap:14px;padding:3px 0;white-space:nowrap}
+  .tree .name{color:var(--text)}.tree .name.dir{color:var(--cyan)}
+  .tree .desc{color:var(--faint);font-family:var(--body);font-size:12.5px}.tree .g{color:var(--faint)}
+
+  .roadmap{display:flex;flex-direction:column}
+  .phase{display:flex;gap:20px}
+  .ph-rail{display:flex;flex-direction:column;align-items:center;flex-shrink:0}
+  .ph-num{width:38px;height:38px;border-radius:50%;background:var(--panel);border:1px solid var(--up);
+    color:var(--up);font-family:var(--mono);font-weight:600;font-size:15px;display:flex;align-items:center;justify-content:center;z-index:1}
+  .phase:not(:last-child) .ph-rail::after{content:"";width:1px;flex:1;background:var(--line);margin:4px 0}
+  .ph-body{background:var(--panel);border:1px solid var(--line);border-radius:11px;padding:18px 20px;margin-bottom:14px;flex:1}
+  .ph-top{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:8px;flex-wrap:wrap}
+  .ph-top h4{font-family:var(--display);font-size:16px;font-weight:600}
+  .ph-stop{font-family:var(--mono);font-size:11px;color:var(--amber);background:rgba(240,185,11,.08);
+    border:1px solid rgba(240,185,11,.3);border-radius:6px;padding:4px 9px;white-space:nowrap}
+  .ph-body p{font-size:13.5px;color:var(--muted);line-height:1.55;margin-bottom:10px}
+  .ph-body code{font-family:var(--mono);font-size:12px;color:var(--cyan)}
+  .ph-out{font-family:var(--mono);font-size:11.5px;color:var(--up);display:inline-flex;align-items:center;gap:7px}
+  .ph-out::before{content:"→"}
+
+  .grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:11px;padding:20px;position:relative;overflow:hidden}
+  .card::before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--up)}
+  .card.warn::before{background:var(--down)}.card.info::before{background:var(--cyan)}
+  .card .tag{font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--up);margin-bottom:9px}
+  .card.warn .tag{color:var(--down)}.card.info .tag{color:var(--cyan)}
+  .card h4{font-family:var(--display);font-size:16px;font-weight:600;margin-bottom:8px}
+  .card p{font-size:13.5px;color:var(--muted);line-height:1.55}.card code{font-family:var(--mono);font-size:12px;color:var(--cyan)}
+
+  footer{padding:40px 0 70px;border-top:1px solid var(--line);margin-top:8px}
+  .warnbox{background:rgba(246,70,93,.06);border:1px solid rgba(246,70,93,.3);border-radius:11px;padding:20px 22px}
+  .warnbox h4{font-family:var(--display);font-size:15px;color:var(--down);margin-bottom:12px;display:flex;align-items:center;gap:9px}
+  .warnbox ul{list-style:none;display:flex;flex-direction:column;gap:9px}
+  .warnbox li{font-size:13.5px;color:var(--muted);padding-left:18px;position:relative}
+  .warnbox li::before{content:"!";position:absolute;left:0;color:var(--down);font-family:var(--mono);font-weight:600}
+  .warnbox b{color:var(--text);font-weight:600}
+  .sign{margin-top:26px;font-family:var(--mono);font-size:11.5px;color:var(--faint);text-align:center}
+
+  @media(max-width:760px){
+    .pipe{grid-template-columns:1fr;gap:10px}
+    .stage,.stage:first-child,.stage:last-child{border:1px solid var(--line)!important;border-radius:10px}
+    .arrow{display:none!important}
+    .grid{grid-template-columns:1fr}
+    .sec-sub{margin-left:0;width:100%}
+    .ctrls{grid-template-columns:1fr;gap:20px}
+    .out{flex-direction:column;gap:14px}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="topbar">
+    <span class="dot"></span><span class="tick">SET</span><span>● set-price-pipeline</span>
+    <span class="sep">/</span><span>GitHub Actions runner</span>
+    <span class="sep">/</span><span>schedule: <span class="tick" id="bar-cron">ปรับได้ด้านล่าง</span></span>
+  </div>
+
+  <header class="hero">
+    <div class="eyebrow">Project blueprint</div>
+    <h1>ดึงราคาหุ้น SET อัตโนมัติ<br><span class="grad">ตั้งเวลาได้เองตามใจ</span></h1>
+    <p class="lede">ระบบ scraper ที่ดึงข้อมูล <b>OHLCV</b> ของหุ้นไทยจาก TradingView ผ่าน <b>tvdatafeed</b> แล้วตั้งให้ <b>GitHub Actions</b> รันเป็นรอบเอง บันทึกผลเป็น JSON + CSV กลับเข้า repo โดยไม่ต้องมี server แยก</p>
+    <div class="chips">
+      <div class="chip"><span class="k">▸</span> <b>Python 3.12</b></div>
+      <div class="chip"><span class="k">▸</span> tvdatafeed <b>(rongardF fork, pinned)</b></div>
+      <div class="chip"><span class="k">▸</span> output: <b>JSON + CSV</b></div>
+      <div class="chip"><span class="k">▸</span> deploy: <b>GitHub Actions</b></div>
+    </div>
+  </header>
+
+  <section>
+    <div class="sec-head"><span class="sec-num">01</span><span class="sec-title">ระบบทำงานยังไง</span><span class="sec-sub">5 ขั้นตอน ต่อ 1 รอบ</span></div>
+    <div class="pipe">
+      <div class="stage"><span class="ico">1</span><h3>Trigger</h3><p>cron ของ Actions ปลุกงานตามรอบที่ตั้งไว้</p><div class="arrow"></div></div>
+      <div class="stage"><span class="ico">2</span><h3>Fetch</h3><p>เชื่อม WebSocket ดึง OHLCV แต่ละ <code>SET:SYMBOL</code></p><div class="arrow"></div></div>
+      <div class="stage"><span class="ico">3</span><h3>Process</h3><p>แปลง timezone, retry ตัวที่ล้ม, ข้ามแถวซ้ำ</p><div class="arrow"></div></div>
+      <div class="stage"><span class="ico">4</span><h3>Save</h3><p>เขียน <code>.json</code> + append <code>.csv</code> (dedup)</p><div class="arrow"></div></div>
+      <div class="stage"><span class="ico">5</span><h3>Commit</h3><p>pull --rebase แล้ว push เฉพาะตอนข้อมูลเปลี่ยน</p><div class="arrow"></div></div>
+    </div>
+  </section>
+
+  <!-- INTERACTIVE CRON BUILDER -->
+  <section>
+    <div class="sec-head"><span class="sec-num">02</span><span class="sec-title">ตั้งเวลารันเอง → ได้ cron อัตโนมัติ</span><span class="sec-sub">ลากปรับได้เลย</span></div>
+    <div class="builder">
+      <div class="ctrls">
+        <div class="ctrl">
+          <label>เวลาเริ่ม <span class="val" id="v-start">10:00</span></label>
+          <input type="range" id="start" min="7" max="22" step="0.5" value="10">
+        </div>
+        <div class="ctrl">
+          <label>เวลาสิ้นสุด <span class="val" id="v-end">16:30</span></label>
+          <input type="range" id="end" min="7.5" max="23.5" step="0.5" value="16.5">
+        </div>
+        <div class="ctrl">
+          <label>ความถี่</label>
+          <div class="seg" id="freq">
+            <button data-f="15">ทุก 15 นาที</button>
+            <button data-f="30" class="on">ทุก 30 นาที</button>
+            <button data-f="60">ทุก 1 ชม.</button>
+          </div>
+        </div>
+        <div class="ctrl">
+          <label>วันที่รัน</label>
+          <div class="seg" id="days">
+            <button data-d="weekdays" class="on">จันทร์–ศุกร์</button>
+            <button data-d="all">ทุกวัน</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="track" id="track"></div>
+      <div class="axis" id="axis"></div>
+
+      <div class="meta">
+        <span class="pill">เวลาไทย: <b id="m-ict">10:00–16:30</b></span>
+        <span class="pill">= UTC: <b id="m-utc">03:00–09:30</b></span>
+        <span class="pill">รันวันละ <b class="runs" id="m-runs">14</b> รอบ</span>
+      </div>
+
+      <div class="out">
+        <div>
+          <div class="label">วาง cron นี้ใน .github/workflows/…yml ใต้ schedule:</div>
+          <div class="cron" id="cron-out"></div>
+        </div>
+        <button class="copy" id="copy">คัดลอก</button>
+      </div>
+      <p class="hint"><b>หมายเหตุ:</b> GitHub ใช้ UTC เสมอ ตัวสร้างนี้แปลงเวลาไทย (GMT+7) เป็น UTC ให้แล้ว · ปรับได้ทีละครึ่งชั่วโมงเพื่อให้ cron แม่นยำ · ค่าเริ่มต้นตรงกับเวลาตลาด SET เปิด</p>
+    </div>
+  </section>
+
+  <!-- PHASE ROADMAP -->
+  <section>
+    <div class="sec-head"><span class="sec-num">03</span><span class="sec-title">แผนสร้างทีละ Phase</span><span class="sec-sub">หยุดตรวจทุกขั้น 🛑</span></div>
+    <div class="roadmap">
+      <div class="phase">
+        <div class="ph-rail"><span class="ph-num">0</span></div>
+        <div class="ph-body">
+          <div class="ph-top"><h4>Spike — พิสูจน์ว่า library ใช้ได้</h4><span class="ph-stop">🛑 หยุดรอยืนยัน</span></div>
+          <p>ติดตั้ง tvdatafeed (pin SHA) แล้วลองดึง <code>SET:KTB</code> แบบ nologin ตัวเดียว ให้รู้ก่อนว่าดึงได้จริงไหม — จุดที่เสี่ยงสุดต้องเช็คก่อน</p>
+          <span class="ph-out">ได้: รู้ว่า nologin ใช้ได้หรือต้อง login</span>
+        </div>
+      </div>
+      <div class="phase">
+        <div class="ph-rail"><span class="ph-num">1</span></div>
+        <div class="ph-body">
+          <div class="ph-top"><h4>Core — รันในเครื่องได้</h4><span class="ph-stop">🛑 หยุดรอยืนยัน</span></div>
+          <p>scraper เวอร์ชันพื้นฐาน + config ดึง 1 symbol แล้วเซฟ <code>.json</code> / <code>.csv</code> ยังไม่แตะ GitHub</p>
+          <span class="ph-out">ได้: ไฟล์ข้อมูลออกมาจริงในเครื่อง</span>
+        </div>
+      </div>
+      <div class="phase">
+        <div class="ph-rail"><span class="ph-num">2</span></div>
+        <div class="ph-body">
+          <div class="ph-top"><h4>Robust — ทนทาน หลาย symbol</h4><span class="ph-stop">🛑 หยุดรอยืนยัน</span></div>
+          <p>เพิ่ม loop หลายตัว, retry, logging, timezone, dedup, แยกไฟล์รายเดือน, ข้ามตัวที่ล้มโดยไม่ crash ทั้งงาน</p>
+          <span class="ph-out">ได้: รันครบทุก symbol ไม่ล้มทั้ง job</span>
+        </div>
+      </div>
+      <div class="phase">
+        <div class="ph-rail"><span class="ph-num">3</span></div>
+        <div class="ph-body">
+          <div class="ph-top"><h4>Automate — GitHub Actions</h4><span class="ph-stop">🛑 หยุดรอยืนยัน</span></div>
+          <p>workflow YAML + cron + concurrency + commit/push แบบ <code>pull --rebase</code> กันชน push เฉพาะตอนข้อมูลเปลี่ยน</p>
+          <span class="ph-out">ได้: รันเองตามเวลา commit กลับ repo</span>
+        </div>
+      </div>
+      <div class="phase">
+        <div class="ph-rail"><span class="ph-num">4</span></div>
+        <div class="ph-body">
+          <div class="ph-top"><h4>Polish — เก็บงาน + เอกสาร</h4><span class="ph-stop">✓ ตรวจ Done</span></div>
+          <p>README, .gitignore, .env.example, แจ้งเตือน webhook เมื่อ fail แล้วตรวจ Definition of Done ทั้งหมด</p>
+          <span class="ph-out">ได้: โปรเจกต์พร้อมส่งมอบ</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- GETTING STARTED -->
+  <section>
+    <div class="sec-head"><span class="sec-num">04</span><span class="sec-title">เริ่มต้นใช้งาน</span><span class="sec-sub">3 ก้าว</span></div>
+    <div class="steps">
+      <div class="step">
+        <span class="st-num">1</span>
+        <div>
+          <h4>สร้าง repo</h4>
+          <p>ตั้งชื่อ <code>set-price-pipeline</code> · ติ๊ก Add README · เลือก .gitignore แบบ Python · เลือก Public (Actions ฟรีไม่จำกัด) หรือ Private (ปลอดภัยกว่า แต่มี quota)</p>
+        </div>
+      </div>
+      <div class="step">
+        <span class="st-num">2</span>
+        <div>
+          <h4>clone + เปิด Claude Code</h4>
+          <div class="cmd">git clone https://github.com/&lt;user&gt;/set-price-pipeline.git<br>cd set-price-pipeline<br>claude</div>
+          <p>แล้ววาง prompt (ไฟล์ claude-code-prompt.md) เริ่มที่ Phase 0</p>
+        </div>
+      </div>
+      <div class="step">
+        <span class="st-num">3</span>
+        <div>
+          <h4>ตั้ง Secrets (ก่อน Phase 3)</h4>
+          <p>Settings → Secrets and variables → Actions ใส่ <code>TV_USERNAME</code>, <code>TV_SECRET</code>, <code>WEBHOOK_URL</code> — ทุกตัว optional ใส่เฉพาะที่ใช้</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="sec-head"><span class="sec-num">05</span><span class="sec-title">ไฟล์ที่จะถูกสร้าง</span><span class="sec-sub">7 ไฟล์หลัก</span></div>
+    <div class="tree">
+      <div class="row"><span class="name dir">set-price-pipeline/</span></div>
+      <div class="row"><span class="g">├─</span><span class="name dir">.github/workflows/</span></div>
+      <div class="row"><span class="g">│&nbsp;&nbsp;└─</span><span class="name">scrape-tradingview.yml</span><span class="desc">cron + commit + แจ้งเตือนเมื่อ fail</span></div>
+      <div class="row"><span class="g">├─</span><span class="name">scraper.py</span><span class="desc">หัวใจหลัก: fetch · retry · save</span></div>
+      <div class="row"><span class="g">├─</span><span class="name">symbols.json</span><span class="desc">รายชื่อหุ้น + interval (แก้ได้ไม่ต้องแตะโค้ด)</span></div>
+      <div class="row"><span class="g">├─</span><span class="name">requirements.txt</span><span class="desc">dependency แบบ pin commit SHA</span></div>
+      <div class="row"><span class="g">├─</span><span class="name">.env.example</span><span class="desc">ตัวอย่าง env (ทุกตัว optional)</span></div>
+      <div class="row"><span class="g">├─</span><span class="name">.gitignore</span><span class="desc">กัน __pycache__ / .env หลุด</span></div>
+      <div class="row"><span class="g">├─</span><span class="name">README.md</span><span class="desc">วิธีรัน + คำเตือน</span></div>
+      <div class="row"><span class="g">└─</span><span class="name dir">data/</span><span class="desc">json/ และ csv/ — ผลลัพธ์</span></div>
+    </div>
+  </section>
+
+  <section>
+    <div class="sec-head"><span class="sec-num">06</span><span class="sec-title">6 จุดตัดสินใจสำคัญ</span><span class="sec-sub">สิ่งที่กันพังไว้ล่วงหน้า</span></div>
+    <div class="grid">
+      <div class="card info"><div class="tag">library</div><h4>ใช้ fork ที่ยังมีคนดูแล</h4><p>เปลี่ยนจาก StreamAlpha (หยุดอัปเดต ~1 ปี) มาเป็น <code>rongardF</code> และ pin commit SHA ให้ build ซ้ำได้ผลเดิม</p></div>
+      <div class="card warn"><div class="tag">ความเสี่ยง #1</div><h4>กัน login พังบน CI</h4><p>auto-login แบบ headless มักล้มเหลว → spike ทดสอบก่อนว่า <code>nologin</code> ดึงหุ้น SET ได้ไหม ถ้าได้ใช้เลย</p></div>
+      <div class="card"><div class="tag">storage</div><h4>กัน repo บวม</h4><p>append CSV บ่อยทำ git history โตเร็ว → แยกไฟล์รายเดือน + dedup ตาม timestamp หรือใช้ Parquet</p></div>
+      <div class="card"><div class="tag">git</div><h4>กัน push ชนกัน</h4><p>รอบที่รันใกล้กันอาจ push ชน → <code>pull --rebase</code> ก่อน push + concurrency group + retry</p></div>
+      <div class="card warn"><div class="tag">monitoring</div><h4>กันพังแบบเงียบ</h4><p>cronjob พังแล้วไม่มีใครรู้ → ส่ง webhook เมื่อ <code>failure()</code> + เตือน auto-disable 60 วัน</p></div>
+      <div class="card info"><div class="tag">วิธีสั่ง claude</div><h4>spike ก่อน สร้างทีหลัง</h4><p>ยืนยันว่า tvdatafeed ดึงข้อมูลได้จริง <i>ก่อน</i> สร้างทั้งระบบ + มี Definition of Done</p></div>
+    </div>
+  </section>
+
+  <footer>
+    <div class="warnbox">
+      <h4>⚠ ต้องรู้ก่อนใช้งานจริง</h4>
+      <ul>
+        <li><b>tvdatafeed ไม่ใช่ official API</b> — reverse-engineer จาก WebSocket อาจพังถ้า TradingView เปลี่ยนระบบ ควรเช็ค repo เป็นระยะ</li>
+        <li><b>เช็ค Terms of Service ของ TradingView</b> เรื่องการดึงข้อมูลอัตโนมัติ โดยเฉพาะถ้าใช้เชิงพาณิชย์</li>
+        <li><b>nologin ได้ข้อมูลจำกัด</b> — บาง symbol ต้อง login จึงจะครบ</li>
+        <li><b>private repo มี quota</b> — ยิ่งรันถี่ยิ่งกินโควต้า (public repo ฟรีไม่จำกัด)</li>
+      </ul>
+    </div>
+    <div class="sign">// blueprint generated for claude code · copy prompt → paste → build</div>
+  </footer>
+
+</div>
+
+<script>
+  const fmt = h => `${String(Math.floor(h)).padStart(2,'0')}:${h%1?'30':'00'}`;
+  const $ = id => document.getElementById(id);
+
+  let state = { start:10, end:16.5, freq:30, days:'weekdays' };
+
+  // axis spans a bit wider than any window for headroom
+  const AX0 = 7, AX1 = 24, AXSPAN = AX1 - AX0;
+  const pct = h => ((h - AX0) / AXSPAN) * 100;
+
+  function compress(hours){
+    // [3,4,5,6,9] -> "3-6,9"
+    hours = [...new Set(hours)].sort((a,b)=>a-b);
+    const out = []; let i = 0;
+    while(i < hours.length){
+      let j = i;
+      while(j+1 < hours.length && hours[j+1] === hours[j]+1) j++;
+      out.push(i===j ? `${hours[i]}` : `${hours[i]}-${hours[j]}`);
+      i = j+1;
+    }
+    return out.join(',');
+  }
+
+  function buildCron(){
+    const {start,end,freq,days} = state;
+    const offset = 7; // ICT = UTC+7
+    const map = {};   // utcHour -> Set(minutes)
+    const runTimes = [];
+    for(let t = Math.round(start*60); t <= Math.round(end*60); t += freq){
+      runTimes.push(t/60);
+      let um = t - offset*60;
+      let h = Math.floor(um/60), m = ((um%60)+60)%60;
+      h = ((h%24)+24)%24;
+      (map[h] = map[h] || new Set()).add(m);
+    }
+    // group hours that share identical minute sets
+    const groups = {};
+    Object.keys(map).map(Number).forEach(h=>{
+      const sig = [...map[h]].sort((a,b)=>a-b).join(',');
+      (groups[sig] = groups[sig] || []).push(h);
+    });
+    const dayField = days==='weekdays' ? '1-5' : '*';
+    const lines = Object.keys(groups).map(sig => `${sig} ${compress(groups[sig])} * * ${dayField}`);
+    return { lines, runs: runTimes.length };
+  }
+
+  function render(){
+    // keep end > start
+    if(state.end <= state.start){ state.end = state.start + 0.5; $('end').value = state.end; }
+
+    $('v-start').textContent = fmt(state.start);
+    $('v-end').textContent = fmt(state.end);
+
+    const track = $('track');
+    track.innerHTML = '';
+    // highlighted window
+    const win = document.createElement('div');
+    win.className = 'window';
+    win.style.left = pct(state.start)+'%';
+    win.style.width = (pct(state.end)-pct(state.start))+'%';
+    track.appendChild(win);
+    // ticks
+    for(let h=state.start; h<=state.end+1e-9; h+=state.freq/60){
+      const t = document.createElement('div');
+      t.className = 'tick';
+      t.style.left = pct(h)+'%';
+      track.appendChild(t);
+    }
+    // axis labels
+    const ax = $('axis'); ax.innerHTML='';
+    [7,10,13,16,19,22,24].forEach(h=>{
+      const s=document.createElement('span'); s.textContent = h===24?'24:00':fmt(h); ax.appendChild(s);
+    });
+
+    // meta
+    $('m-ict').textContent = `${fmt(state.start)}–${fmt(state.end)}`;
+    const u0 = ((state.start-7)%24+24)%24, u1 = ((state.end-7)%24+24)%24;
+    $('m-utc').textContent = `${fmt(u0)}–${fmt(u1)}`;
+
+    const {lines,runs} = buildCron();
+    $('m-runs').textContent = runs;
+
+    // cron output (multi-line if needed)
+    const cmt = state.days==='weekdays' ? '# จ.–ศ.' : '# ทุกวัน';
+    $('cron-out').innerHTML = lines.map(l=>`- cron: "${l}"`).join('<br>') +
+      `<br><span class="cm">${cmt} · ${fmt(state.start)}–${fmt(state.end)} ICT</span>`;
+    $('bar-cron').textContent = lines.length>1 ? `${lines.length} rules` : lines[0];
+
+    window._cronText = lines.map(l=>`    - cron: "${l}"`).join('\n');
+  }
+
+  // wire controls
+  $('start').addEventListener('input',e=>{ state.start=parseFloat(e.target.value); render(); });
+  $('end').addEventListener('input',e=>{ state.end=parseFloat(e.target.value); render(); });
+  $('freq').addEventListener('click',e=>{
+    if(!e.target.dataset.f) return;
+    state.freq=parseInt(e.target.dataset.f);
+    [...e.currentTarget.children].forEach(b=>b.classList.toggle('on', b===e.target));
+    render();
+  });
+  $('days').addEventListener('click',e=>{
+    if(!e.target.dataset.d) return;
+    state.days=e.target.dataset.d;
+    [...e.currentTarget.children].forEach(b=>b.classList.toggle('on', b===e.target));
+    render();
+  });
+  $('copy').addEventListener('click',()=>{
+    const txt = window._cronText || '';
+    const done = ()=>{ const b=$('copy'); b.textContent='คัดลอกแล้ว ✓'; b.classList.add('done');
+      setTimeout(()=>{b.textContent='คัดลอก';b.classList.remove('done')},1600); };
+    if(navigator.clipboard && navigator.clipboard.writeText){
+      navigator.clipboard.writeText(txt).then(done).catch(()=>fallback(txt,done));
+    } else fallback(txt,done);
+  });
+  function fallback(txt,cb){
+    const ta=document.createElement('textarea'); ta.value=txt; ta.style.position='fixed'; ta.style.opacity='0';
+    document.body.appendChild(ta); ta.select();
+    try{document.execCommand('copy')}catch(e){}
+    document.body.removeChild(ta); cb();
+  }
+
+  render();
+</script>
+</body>
+</html>
