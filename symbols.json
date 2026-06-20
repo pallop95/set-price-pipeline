@@ -1,0 +1,7 @@
+{
+  "symbols": [
+    {"symbol": "KTB", "exchange": "SET"}
+  ],
+  "intervals": ["1D"],
+  "n_bars": 10
+}
