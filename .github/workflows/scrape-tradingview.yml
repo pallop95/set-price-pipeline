@@ -1,0 +1,73 @@
+name: Scrape TradingView SET Prices
+
+on:
+  schedule:
+    # ตลาด SET เปิด 10:00–16:30 BKK = 03:00–09:30 UTC จ–ศ
+    # รันทุก 30 นาที ช่วง 03:00–09:30 UTC
+    - cron: "0,30 3-9 * * 1-5"
+  workflow_dispatch:
+
+concurrency:
+  group: scrape-set
+  cancel-in-progress: false  # รอรอบก่อนจบก่อน ไม่ยกเลิกกลางคัน
+
+jobs:
+  scrape:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Run scraper
+        run: python scraper.py
+        env:
+          TV_USERNAME: ${{ secrets.TV_USERNAME }}
+          TV_SECRET: ${{ secrets.TV_SECRET }}
+
+      - name: Commit and push data
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          # ตรวจว่ามีไฟล์เปลี่ยนจริงก่อน commit
+          if git diff --quiet data/; then
+            echo "ไม่มีข้อมูลใหม่ ข้ามการ commit"
+            exit 0
+          fi
+
+          git add data/
+          git commit -m "data: auto-update $(date -u +'%Y-%m-%d %H:%M UTC')"
+
+          # pull --rebase ก่อน push กัน non-fast-forward
+          for i in 1 2 3; do
+            git pull --rebase origin main && git push && break
+            echo "push ล้มเหลวครั้งที่ $i ลองใหม่..."
+            sleep 5
+          done
+
+      - name: Notify on failure
+        if: failure()
+        run: |
+          if [ -z "$WEBHOOK_URL" ]; then
+            echo "ไม่มี WEBHOOK_URL ข้ามการแจ้งเตือน"
+            exit 0
+          fi
+          curl -s -X POST "$WEBHOOK_URL" \
+            -H "Content-Type: application/json" \
+            -d "{\"content\": \"SET scraper failed — ${{ github.run_id }} (${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})\"}"
+        env:
+          WEBHOOK_URL: ${{ secrets.WEBHOOK_URL }}
