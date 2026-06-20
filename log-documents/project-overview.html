@@ -130,6 +130,7 @@
   .ph-rail{display:flex;flex-direction:column;align-items:center;flex-shrink:0}
   .ph-num{width:38px;height:38px;border-radius:50%;background:var(--panel);border:1px solid var(--up);
     color:var(--up);font-family:var(--mono);font-weight:600;font-size:15px;display:flex;align-items:center;justify-content:center;z-index:1}
+  .ph-num.done{background:var(--up);color:var(--ink);border-color:var(--up)}
   .phase:not(:last-child) .ph-rail::after{content:"";width:1px;flex:1;background:var(--line);margin:4px 0}
   .ph-body{background:var(--panel);border:1px solid var(--line);border-radius:11px;padding:18px 20px;margin-bottom:14px;flex:1}
   .ph-top{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:8px;flex-wrap:wrap}
@@ -257,43 +258,59 @@
     <div class="sec-head"><span class="sec-num">03</span><span class="sec-title">แผนสร้างทีละ Phase</span><span class="sec-sub">หยุดตรวจทุกขั้น 🛑</span></div>
     <div class="roadmap">
       <div class="phase">
-        <div class="ph-rail"><span class="ph-num">0</span></div>
+        <div class="ph-rail"><span class="ph-num done">0</span></div>
         <div class="ph-body">
-          <div class="ph-top"><h4>Spike — พิสูจน์ว่า library ใช้ได้</h4><span class="ph-stop">🛑 หยุดรอยืนยัน</span></div>
+          <div class="ph-top"><h4>Spike — พิสูจน์ว่า library ใช้ได้</h4><span class="ph-stop" style="color:var(--up);border-color:rgba(46,189,133,.3);background:rgba(46,189,133,.08)">✓ เสร็จแล้ว</span></div>
           <p>ติดตั้ง tvdatafeed (pin SHA) แล้วลองดึง <code>SET:KTB</code> แบบ nologin ตัวเดียว ให้รู้ก่อนว่าดึงได้จริงไหม — จุดที่เสี่ยงสุดต้องเช็คก่อน</p>
           <span class="ph-out">ได้: รู้ว่า nologin ใช้ได้หรือต้อง login</span>
         </div>
       </div>
       <div class="phase">
-        <div class="ph-rail"><span class="ph-num">1</span></div>
+        <div class="ph-rail"><span class="ph-num done">1</span></div>
         <div class="ph-body">
-          <div class="ph-top"><h4>Core — รันในเครื่องได้</h4><span class="ph-stop">🛑 หยุดรอยืนยัน</span></div>
+          <div class="ph-top"><h4>Core — รันในเครื่องได้</h4><span class="ph-stop" style="color:var(--up);border-color:rgba(46,189,133,.3);background:rgba(46,189,133,.08)">✓ เสร็จแล้ว</span></div>
           <p>scraper เวอร์ชันพื้นฐาน + config ดึง 1 symbol แล้วเซฟ <code>.json</code> / <code>.csv</code> ยังไม่แตะ GitHub</p>
           <span class="ph-out">ได้: ไฟล์ข้อมูลออกมาจริงในเครื่อง</span>
         </div>
       </div>
       <div class="phase">
-        <div class="ph-rail"><span class="ph-num">2</span></div>
+        <div class="ph-rail"><span class="ph-num done">2</span></div>
         <div class="ph-body">
-          <div class="ph-top"><h4>Robust — ทนทาน หลาย symbol</h4><span class="ph-stop">🛑 หยุดรอยืนยัน</span></div>
+          <div class="ph-top"><h4>Robust — ทนทาน หลาย symbol</h4><span class="ph-stop" style="color:var(--up);border-color:rgba(46,189,133,.3);background:rgba(46,189,133,.08)">✓ เสร็จแล้ว</span></div>
           <p>เพิ่ม loop หลายตัว, retry, logging, timezone, dedup, แยกไฟล์รายเดือน, ข้ามตัวที่ล้มโดยไม่ crash ทั้งงาน</p>
           <span class="ph-out">ได้: รันครบทุก symbol ไม่ล้มทั้ง job</span>
         </div>
       </div>
       <div class="phase">
-        <div class="ph-rail"><span class="ph-num">3</span></div>
+        <div class="ph-rail"><span class="ph-num done">3</span></div>
         <div class="ph-body">
-          <div class="ph-top"><h4>Automate — GitHub Actions</h4><span class="ph-stop">🛑 หยุดรอยืนยัน</span></div>
+          <div class="ph-top"><h4>Automate — GitHub Actions</h4><span class="ph-stop" style="color:var(--up);border-color:rgba(46,189,133,.3);background:rgba(46,189,133,.08)">✓ เสร็จแล้ว</span></div>
           <p>workflow YAML + cron + concurrency + commit/push แบบ <code>pull --rebase</code> กันชน push เฉพาะตอนข้อมูลเปลี่ยน</p>
           <span class="ph-out">ได้: รันเองตามเวลา commit กลับ repo</span>
         </div>
       </div>
       <div class="phase">
-        <div class="ph-rail"><span class="ph-num">4</span></div>
+        <div class="ph-rail"><span class="ph-num done">4</span></div>
         <div class="ph-body">
-          <div class="ph-top"><h4>Polish — เก็บงาน + เอกสาร</h4><span class="ph-stop">✓ ตรวจ Done</span></div>
+          <div class="ph-top"><h4>Polish — เก็บงาน + เอกสาร</h4><span class="ph-stop" style="color:var(--up);border-color:rgba(46,189,133,.3);background:rgba(46,189,133,.08)">✓ เสร็จแล้ว</span></div>
           <p>README, .gitignore, .env.example, แจ้งเตือน webhook เมื่อ fail แล้วตรวจ Definition of Done ทั้งหมด</p>
           <span class="ph-out">ได้: โปรเจกต์พร้อมส่งมอบ</span>
+        </div>
+      </div>
+      <div class="phase">
+        <div class="ph-rail"><span class="ph-num" style="border-color:var(--cyan);color:var(--cyan)">5</span></div>
+        <div class="ph-body">
+          <div class="ph-top"><h4>Supabase — เซฟข้อมูลลง database</h4><span class="ph-stop">🛑 หยุดรอยืนยัน</span></div>
+          <p>สร้าง table <code>stock_prices</code> ใน Supabase · เพิ่ม <code>supabase-py</code> ใน requirements.txt · เพิ่มฟังก์ชัน <code>upsert_supabase()</code> ใน scraper.py (รันคู่กับ CSV/JSON เดิม) · ใส่ <code>SUPABASE_URL</code> + <code>SUPABASE_KEY</code> ใน GitHub Secrets</p>
+          <span class="ph-out">ได้: ข้อมูลไหลเข้า Supabase อัตโนมัติทุกรอบ query ด้วย SQL ได้เลย</span>
+        </div>
+      </div>
+      <div class="phase">
+        <div class="ph-rail"><span class="ph-num" style="border-color:var(--cyan);color:var(--cyan)">6</span></div>
+        <div class="ph-body">
+          <div class="ph-top"><h4>Frontend — Nuxt 3 บน Vercel</h4><span class="ph-stop">🛑 หยุดรอยืนยัน</span></div>
+          <p>สร้าง repo ใหม่ <code>set-price-frontend</code> · Nuxt 3 ดึงข้อมูลจาก Supabase REST API · แสดง dashboard ราคาหุ้น · deploy บน Vercel (auto-deploy ทุก push)</p>
+          <span class="ph-out">ได้: หน้าเว็บแสดงราคา SET real-time พร้อม URL สาธารณะ</span>
         </div>
       </div>
     </div>
@@ -353,6 +370,87 @@
       <div class="card"><div class="tag">git</div><h4>กัน push ชนกัน</h4><p>รอบที่รันใกล้กันอาจ push ชน → <code>pull --rebase</code> ก่อน push + concurrency group + retry</p></div>
       <div class="card warn"><div class="tag">monitoring</div><h4>กันพังแบบเงียบ</h4><p>cronjob พังแล้วไม่มีใครรู้ → ส่ง webhook เมื่อ <code>failure()</code> + เตือน auto-disable 60 วัน</p></div>
       <div class="card info"><div class="tag">วิธีสั่ง claude</div><h4>spike ก่อน สร้างทีหลัง</h4><p>ยืนยันว่า tvdatafeed ดึงข้อมูลได้จริง <i>ก่อน</i> สร้างทั้งระบบ + มี Definition of Done</p></div>
+    </div>
+  </section>
+
+  <!-- NEXT PHASES: SUPABASE + NUXT -->
+  <section>
+    <div class="sec-head"><span class="sec-num">07</span><span class="sec-title">แผน Phase 5–6 (Supabase + Nuxt FE)</span><span class="sec-sub">full-stack architecture</span></div>
+
+    <!-- Architecture flow -->
+    <div class="pipe" style="grid-template-columns:repeat(4,1fr);margin-bottom:28px">
+      <div class="stage"><span class="ico" style="background:var(--up)">GA</span><h3>GitHub Actions</h3><p>scraper.py รันทุก 30 นาที ดึง OHLCV จาก TradingView</p><div class="arrow"></div></div>
+      <div class="stage"><span class="ico" style="background:var(--amber)">DB</span><h3>Supabase</h3><p>upsert ลง <code>stock_prices</code> table · dedup โดย primary key</p><div class="arrow"></div></div>
+      <div class="stage"><span class="ico" style="background:var(--cyan)">API</span><h3>Supabase REST</h3><p>Nuxt query ผ่าน REST API หรือ supabase-js client</p><div class="arrow"></div></div>
+      <div class="stage"><span class="ico" style="background:var(--cyan)">FE</span><h3>Nuxt 3 / Vercel</h3><p>dashboard ราคาหุ้น · auto-deploy ทุก push · URL สาธารณะ</p><div class="arrow"></div></div>
+    </div>
+
+    <!-- Phase 5 detail -->
+    <div style="margin-bottom:14px">
+      <div class="sec-head" style="margin-bottom:16px"><span class="sec-num" style="color:var(--cyan)">5</span><span class="sec-title" style="font-size:18px">Phase 5 — Supabase</span></div>
+      <div class="steps">
+        <div class="step">
+          <span class="st-num" style="background:var(--amber);color:var(--ink)">A</span>
+          <div>
+            <h4>สร้าง table ใน Supabase dashboard</h4>
+            <p>ไปที่ supabase.com → Table Editor → New Table ชื่อ <code>stock_prices</code></p>
+            <div class="cmd">symbol       TEXT<br>exchange     TEXT<br>interval     TEXT<br>datetime     TIMESTAMPTZ<br>open         FLOAT8<br>high         FLOAT8<br>low          FLOAT8<br>close        FLOAT8<br>volume       FLOAT8<br><br>PRIMARY KEY (symbol, interval, datetime)</div>
+          </div>
+        </div>
+        <div class="step">
+          <span class="st-num" style="background:var(--amber);color:var(--ink)">B</span>
+          <div>
+            <h4>เพิ่ม secrets ใน GitHub</h4>
+            <p>Settings → Secrets → Actions → เพิ่ม <code>SUPABASE_URL</code> และ <code>SUPABASE_KEY</code> (ใช้ service role key)</p>
+          </div>
+        </div>
+        <div class="step">
+          <span class="st-num" style="background:var(--amber);color:var(--ink)">C</span>
+          <div>
+            <h4>เพิ่ม supabase-py + upsert ใน scraper.py</h4>
+            <p>ถ้าไม่มี <code>SUPABASE_URL</code> ใน env → ข้ามเงียบๆ ไม่ crash · รันคู่กับ CSV/JSON เดิม</p>
+            <div class="cmd">pip install supabase  # เพิ่มใน requirements.txt</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Phase 6 detail -->
+    <div>
+      <div class="sec-head" style="margin-bottom:16px"><span class="sec-num" style="color:var(--cyan)">6</span><span class="sec-title" style="font-size:18px">Phase 6 — Nuxt 3 บน Vercel</span></div>
+      <div class="steps">
+        <div class="step">
+          <span class="st-num">1</span>
+          <div>
+            <h4>สร้าง repo ใหม่ set-price-frontend</h4>
+            <div class="cmd">npx nuxi init set-price-frontend<br>cd set-price-frontend</div>
+            <p>repo แยกจาก set-price-pipeline · Nuxt 3 + TypeScript</p>
+          </div>
+        </div>
+        <div class="step">
+          <span class="st-num">2</span>
+          <div>
+            <h4>ติดตั้ง @supabase/supabase-js และเชื่อม</h4>
+            <div class="cmd">npm install @supabase/supabase-js</div>
+            <p>ใส่ <code>SUPABASE_URL</code> และ <code>SUPABASE_ANON_KEY</code> ใน <code>.env</code> · ใช้ anon key (ไม่ใช่ service role) สำหรับ FE</p>
+          </div>
+        </div>
+        <div class="step">
+          <span class="st-num">3</span>
+          <div>
+            <h4>Deploy บน Vercel</h4>
+            <p>vercel.com → Import Project → เลือก repo <code>set-price-frontend</code> · Vercel detect Nuxt อัตโนมัติ · ใส่ env vars ใน Vercel dashboard → Deploy</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Key decisions -->
+    <div class="grid" style="margin-top:24px">
+      <div class="card info"><div class="tag">Supabase key</div><h4>ใช้ anon key บน FE เท่านั้น</h4><p>service role key มีสิทธิ์เต็ม — ใส่ใน GitHub Secrets เท่านั้น · FE ใช้ anon key + Row Level Security</p></div>
+      <div class="card"><div class="tag">2 repos แยกกัน</div><h4>pipeline ≠ frontend</h4><p><code>set-price-pipeline</code> = data · <code>set-price-frontend</code> = UI · แยก deploy cycle และ permission ออกจากกัน</p></div>
+      <div class="card"><div class="tag">CSV ยังเก็บไว้</div><h4>Supabase + CSV ควบคู่</h4><p>Supabase เป็น query layer · CSV ใน repo เป็น backup · ถ้า Supabase down ข้อมูลไม่หาย</p></div>
+      <div class="card warn"><div class="tag">Supabase free tier</div><h4>pause หลัง 1 สัปดาห์ inactive</h4><p>free project จะ pause ถ้าไม่มี request 7 วัน · ให้ FE query บ้าง หรืออัป plan ถ้าใช้ production</p></div>
     </div>
   </section>
 
